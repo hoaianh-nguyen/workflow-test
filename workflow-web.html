@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow — Web</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0c0c13; --surface:#111120; --surface2:#16162a;
+  --border:#1e1e35; --border2:#28284a;
+  --text:#e6e6f2; --muted:#545470;
+  --obsidian:#8b7ff5; --tableau:#f0a830; --claude:#d4826a; --n8n:#52b88a;
+  --wire:#252540;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(255,255,255,0.035) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
+
+/* ── LAYOUT ── */
+.shell{max-width:1140px;margin:0 auto;padding:44px 32px 80px;position:relative;z-index:1}
+
+/* ── HEADER ── */
+header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;gap:20px;flex-wrap:wrap}
+.hd-left .eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.hd-left h1{font-size:clamp(22px,3.5vw,36px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.hd-left h1 em{font-style:normal;background:linear-gradient(110deg,var(--obsidian),var(--claude),var(--tableau));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:6px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:10px 20px;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:11.5px;cursor:pointer;letter-spacing:.06em;transition:all .2s;margin-bottom:-1px;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+.tab.a0.active{color:var(--obsidian);border-bottom-color:var(--obsidian)}
+.tab.a1.active{color:var(--tableau);border-bottom-color:var(--tableau)}
+.tab.a2.active{color:var(--claude);border-bottom-color:var(--claude)}
+.tab.a3.active{color:var(--n8n);border-bottom-color:var(--n8n)}
+
+/* ── PANELS ── */
+.panel{display:none;animation:fadeUp .3s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.pane-head{margin-bottom:24px}
+.pane-head h2{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.pane-head p{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+
+/* ── CANVAS ── */
+.canvas{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 32px;overflow-x:auto}
+
+/* ── HORIZONTAL FLOW ── */
+.hflow{display:flex;align-items:center;justify-content:flex-start;gap:0;min-width:max-content}
+.hflow-center{justify-content:center}
+
+/* Node */
+.nd{display:flex;flex-direction:column;align-items:center;width:148px;flex-shrink:0}
+.nd-box{width:134px;border:1.5px solid;border-radius:13px;padding:14px 10px 12px;text-align:center;background:var(--bg);transition:transform .2s,box-shadow .25s;cursor:default;position:relative}
+.nd-box:hover{transform:translateY(-3px)}
+.nd.obsidian .nd-box{border-color:var(--obsidian)} .nd.obsidian .nd-box:hover{box-shadow:0 4px 28px rgba(139,127,245,.2)}
+.nd.tableau  .nd-box{border-color:var(--tableau)}  .nd.tableau  .nd-box:hover{box-shadow:0 4px 28px rgba(240,168,48,.18)}
+.nd.claude   .nd-box{border-color:var(--claude)}   .nd.claude   .nd-box:hover{box-shadow:0 4px 28px rgba(212,130,106,.2)}
+.nd.n8n      .nd-box{border-color:var(--n8n)}      .nd.n8n      .nd-box:hover{box-shadow:0 4px 28px rgba(82,184,138,.18)}
+.nd.src      .nd-box{border-color:var(--border2);border-style:dashed}
+
+.nd-icon{font-size:22px;display:block;margin-bottom:7px}
+.nd-tool{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px}
+.obsidian .nd-tool{color:var(--obsidian)} .tableau .nd-tool{color:var(--tableau)} .claude .nd-tool{color:var(--claude)} .n8n .nd-tool{color:var(--n8n)} .src .nd-tool{color:var(--muted)}
+.nd-label{font-size:12px;font-weight:700;line-height:1.3}
+.nd-desc{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.45;font-family:'DM Mono',monospace}
+.nd-badge{position:absolute;top:-9px;right:-6px;background:var(--surface2);border:1px solid var(--border2);border-radius:100px;font-family:'DM Mono',monospace;font-size:8.5px;padding:2px 7px;color:var(--muted);white-space:nowrap}
+
+/* Horizontal arrow connector */
+.arr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;flex-shrink:0;margin-top:20px;gap:3px}
+.arr-line{width:100%;height:1.5px;background:var(--wire);position:relative}
+.arr-line::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left:7px solid var(--wire);border-right:none}
+.arr-lbl{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.06em;white-space:nowrap}
+
+/* Vertical arrow */
+.varr{display:flex;flex-direction:column;align-items:center;gap:2px;margin:6px 0}
+.varr-line{width:1.5px;height:30px;background:var(--wire);position:relative}
+.varr-line::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top:7px solid var(--wire);border-bottom:none}
+.varr-lbl{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.05em}
+
+/* Section wrapper for vertical flows */
+.vflow{display:flex;flex-direction:column;align-items:center}
+
+/* Split branch */
+.split{display:flex;gap:40px;align-items:flex-start;justify-content:center;margin-top:4px}
+.split-col{display:flex;flex-direction:column;align-items:center}
+.split-arm{height:1.5px;background:var(--wire);width:80px;margin-top:22px;position:relative}
+.split-arm.left::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right:7px solid var(--wire)}
+.split-arm.right::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left:7px solid var(--wire)}
+
+/* Hub layout */
+.hub-wrap{display:flex;flex-direction:column;align-items:center}
+.hub-triggers{display:flex;gap:20px;align-items:flex-start;justify-content:center;margin-bottom:0}
+.hub-outputs{display:flex;gap:16px;align-items:flex-start;justify-content:center;margin-top:0}
+
+/* Two-row flow */
+.row2{display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* Bottom note */
+.note{margin-top:18px;background:rgba(255,255,255,.025);border:1px dashed var(--border2);border-radius:10px;padding:11px 18px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;text-align:center}
+.note strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="hd-left">
+      <div class="eyebrow">// Desktop View · Workflow Architecture</div>
+      <h1>Your <em>4-Tool Stack</em></h1>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--obsidian)"></div>Obsidian</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--tableau)"></div>Tableau</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--claude)"></div>Claude+HTML</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--n8n)"></div>n8n</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--border2);border-radius:50%"></div>Data/External</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab a0 active" onclick="show(0,this)">01 · Initiative Tracking</button>
+    <button class="tab a1"        onclick="show(1,this)">02 · Data Evaluation</button>
+    <button class="tab a2"        onclick="show(2,this)">03 · Realtime Ops</button>
+    <button class="tab a3"        onclick="show(3,this)">04 · Automation Glue</button>
+  </div>
+
+  <!-- ═══ UC1 ═══ -->
+  <div class="panel active" id="p0">
+    <div class="pane-head"><h2>Initiative Tracking & Document Sharing</h2><p>Obsidian → n8n sync → Tableau → Stakeholders</p></div>
+    <div class="canvas">
+      <div class="hflow hflow-center">
+        <div class="nd obsidian">
+          <div class="nd-box"><span class="nd-icon">📓</span><div class="nd-tool">Obsidian</div><div class="nd-label">Write & Track</div><div class="nd-desc">Briefs, OKRs, decisions, meeting notes</div></div>
+        </div>
+        <div class="arr"><div class="arr-line"></div><div class="arr-lbl">file change</div></div>
+        <div class="nd n8n">
+          <div class="nd-box"><span class="nd-icon">🔄</span><div class="nd-tool">n8n</div><div class="nd-label">Sync Status</div><div class="nd-desc">Watch vault → push to Google Sheet / Airtable</div></div>
+        </div>
+        <div class="arr"><div class="arr-line"></div><div class="arr-lbl">structured rows</div></div>
+        <div class="nd src">
+          <div class="nd-box"><span class="nd-icon">🗄️</span><div class="nd-tool">Data Layer</div><div class="nd-label">Sheet / Airtable</div><div class="nd-desc">Normalised initiative records</div></div>
+        </div>
+        <div class="arr"><div class="arr-line"></div><div class="arr-lbl">live connect</div></div>
+        <div class="nd tableau">
+          <div class="nd-box"><span class="nd-icon">📊</span><div class="nd-tool">Tableau</div><div class="nd-label">Dashboard</div><div class="nd-desc">Health, completion %, risk flags</div></div>
+        </div>
+        <div class="arr"><div class="arr-line"></div><div class="arr-lbl">share link</div></div>
+        <div class="nd src">
+          <div class="nd-box"><span class="nd-icon">👥</span><div class="nd-tool">Output</div><div class="nd-label">Stakeholders</div><div class="nd-desc">Tableau Public / Server view</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">💡 <strong>Obsidian</strong> = writing layer. <strong>n8n</strong> = boring sync. <strong>Tableau</strong> = polished face for leadership.</div>
+  </div>
+
+  <!-- ═══ UC2 ═══ -->
+  <div class="panel" id="p1">
+    <div class="pane-head"><h2>Deep Data Evaluation</h2><p>Tableau for structured views · Claude for fast ad-hoc exploration</p></div>
+    <div class="canvas">
+      <div class="vflow">
+        <!-- Source -->
+        <div class="nd src"><div class="nd-box"><span class="nd-icon">🗄️</span><div class="nd-tool">Source</div><div class="nd-label">Data Warehouse / DB</div><div class="nd-desc">Raw operational data</div></div></div>
+        <div class="varr"><div class="varr-line"></div><div class="varr-lbl">two paths</div></div>
+        <!-- Split -->
+        <div class="split">
+          <!-- Path A -->
+          <div class="split-col">
+            <div class="split-arm left"></div>
+            <div class="varr" style="margin:4px 0 8px"><div class="varr-line"></div><div class="varr-lbl">pre-built schema</div></div>
+            <div class="nd tableau"><div class="nd-box"><div class="nd-badge">Structured</div><span class="nd-icon">📊</span><div class="nd-tool">Tableau</div><div class="nd-label">KPI Dashboard</div><div class="nd-desc">Trends, cohorts, stable metrics</div></div></div>
+            <div class="varr" style="margin:8px 0"><div class="varr-line"></div></div>
+            <div class="nd src"><div class="nd-box"><span class="nd-icon">👥</span><div class="nd-tool">Output</div><div class="nd-label">Stakeholder View</div><div class="nd-desc">Shared dashboard link</div></div></div>
+          </div>
+          <!-- Path B -->
+          <div class="split-col">
+            <div class="split-arm right"></div>
+            <div class="varr" style="margin:4px 0 8px"><div class="varr-line"></div><div class="varr-lbl">export CSV/JSON</div></div>
+            <div class="nd n8n"><div class="nd-box"><div class="nd-badge">Ad-hoc</div><span class="nd-icon">🔄</span><div class="nd-tool">n8n</div><div class="nd-label">Extract & Deliver</div><div class="nd-desc">Format + send data slice to analyst</div></div></div>
+            <div class="varr" style="margin:8px 0"><div class="varr-line"></div><div class="varr-lbl">paste to Claude</div></div>
+            <div class="nd claude"><div class="nd-box"><div class="nd-badge">⚡ Fast</div><span class="nd-icon">🧠</span><div class="nd-tool">Claude+HTML</div><div class="nd-label">Interactive Chart</div><div class="nd-desc">"Why did X drop?" → instant visual</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">⚡ <strong>Claude fills the gap</strong> — no dashboard rebuild for ad-hoc questions. Paste data, ask, get an interactive breakdown in seconds.</div>
+  </div>
+
+  <!-- ═══ UC3 ═══ -->
+  <div class="panel" id="p2">
+    <div class="pane-head"><h2>Realtime Ops — Driver Tracking & Assignment</h2><p>n8n ingests live data · Claude reasons · HTML displays · loops back</p></div>
+    <div class="canvas">
+      <div class="row2">
+        <!-- Row 1 -->
+        <div class="hflow hflow-center">
+          <div class="nd src"><div class="nd-box"><span class="nd-icon">📡</span><div class="nd-tool">Live Sources</div><div class="nd-label">GPS + Orders + Availability</div><div class="nd-desc">Webhooks, APIs, streams</div></div></div>
+          <div class="arr"><div class="arr-line"></div><div class="arr-lbl">webhook</div></div>
+          <div class="nd n8n"><div class="nd-box"><span class="nd-icon">⚙️</span><div class="nd-tool">n8n</div><div class="nd-label">Ingest & Normalise</div><div class="nd-desc">Transform payload, detect threshold events</div></div></div>
+          <div class="arr"><div class="arr-line"></div><div class="arr-lbl">structured context</div></div>
+          <div class="nd claude"><div class="nd-box"><span class="nd-icon">🧠</span><div class="nd-tool">Claude API</div><div class="nd-label">Reason & Assign</div><div class="nd-desc">Multi-variable optimisation, anomaly flags</div></div></div>
+        </div>
+        <!-- Down -->
+        <div class="varr" style="margin:4px 0"><div class="varr-line"></div><div class="varr-lbl">decision + display data</div></div>
+        <!-- Row 2 -->
+        <div class="hflow hflow-center">
+          <div class="nd claude"><div class="nd-box"><span class="nd-icon">🖥️</span><div class="nd-tool">HTML Artifact</div><div class="nd-label">Live Dashboard</div><div class="nd-desc">Map, driver table, assignment queue</div></div></div>
+          <div class="arr"><div class="arr-line"></div><div class="arr-lbl">decision output</div></div>
+          <div class="nd n8n"><div class="nd-box"><span class="nd-icon">📲</span><div class="nd-tool">n8n</div><div class="nd-label">Push & Log</div><div class="nd-desc">Notify driver app, log to warehouse</div></div></div>
+          <div class="arr"><div class="arr-line"></div><div class="arr-lbl">historical data</div></div>
+          <div class="nd tableau"><div class="nd-box"><span class="nd-icon">📊</span><div class="nd-tool">Tableau</div><div class="nd-label">Ops Review</div><div class="nd-desc">Performance trends, SLA analysis</div></div></div>
+          <div class="arr"><div class="arr-line"></div><div class="arr-lbl">insights</div></div>
+          <div class="nd obsidian"><div class="nd-box"><span class="nd-icon">📓</span><div class="nd-tool">Obsidian</div><div class="nd-label">Incident Log</div><div class="nd-desc">Post-mortems, learnings, decisions</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">🔁 <strong>Closed loop:</strong> Live data → AI decision → action → logged → visualised → documented. All 4 tools active.</div>
+  </div>
+
+  <!-- ═══ UC4 ═══ -->
+  <div class="panel" id="p3">
+    <div class="pane-head"><h2>n8n as Automation Glue</h2><p>All triggers route through n8n — dispatched to the right tool</p></div>
+    <div class="canvas">
+      <div class="hub-wrap">
+        <!-- Triggers -->
+        <div class="hub-triggers">
+          <div class="nd src" style="width:130px"><div class="nd-box" style="width:118px"><span class="nd-icon">⏰</span><div class="nd-tool">Trigger</div><div class="nd-label">Schedule / Cron</div></div></div>
+          <div class="nd src" style="width:130px"><div class="nd-box" style="width:118px"><span class="nd-icon">📥</span><div class="nd-tool">Trigger</div><div class="nd-label">Webhook Event</div></div></div>
+          <div class="nd src" style="width:130px"><div class="nd-box" style="width:118px"><span class="nd-icon">🔔</span><div class="nd-tool">Trigger</div><div class="nd-label">Threshold Alert</div></div></div>
+          <div class="nd src" style="width:130px"><div class="nd-box" style="width:118px"><span class="nd-icon">📝</span><div class="nd-tool">Trigger</div><div class="nd-label">Form / Manual</div></div></div>
+        </div>
+        <div class="varr" style="margin:6px 0"><div class="varr-line" style="height:24px"></div><div class="varr-lbl">all routes through</div></div>
+        <!-- Hub -->
+        <div class="nd n8n" style="width:200px">
+          <div class="nd-box" style="width:180px;border-width:2px;box-shadow:0 0 40px rgba(82,184,138,.16)">
+            <span class="nd-icon" style="font-size:26px">🔄</span>
+            <div class="nd-tool" style="font-size:10px">n8n Orchestrator</div>
+            <div class="nd-label" style="font-size:14px">Central Hub</div>
+            <div class="nd-desc">Routes, transforms, triggers, loops</div>
+          </div>
+        </div>
+        <div class="varr" style="margin:6px 0"><div class="varr-line" style="height:20px"></div><div class="varr-lbl">dispatches to</div></div>
+        <!-- Outputs -->
+        <div class="hub-outputs">
+          <div class="nd claude" style="width:145px"><div class="nd-box" style="width:130px"><span class="nd-icon">🧠</span><div class="nd-tool">Claude</div><div class="nd-label">AI Processing</div><div class="nd-desc">Summarise, analyse, decide, draft</div></div></div>
+          <div class="nd tableau" style="width:145px"><div class="nd-box" style="width:130px"><span class="nd-icon">📊</span><div class="nd-tool">Tableau</div><div class="nd-label">Data Refresh</div><div class="nd-desc">Push updated data to sources</div></div></div>
+          <div class="nd obsidian" style="width:145px"><div class="nd-box" style="width:130px"><span class="nd-icon">📓</span><div class="nd-tool">Obsidian</div><div class="nd-label">Auto-File Notes</div><div class="nd-desc">Write summaries & logs to vault</div></div></div>
+          <div class="nd src" style="width:145px"><div class="nd-box" style="width:130px"><span class="nd-icon">📨</span><div class="nd-tool">External</div><div class="nd-label">Notify & Deliver</div><div class="nd-desc">Slack, email, SMS, app push</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">🔗 <strong>Rule:</strong> If you move data between tools manually more than twice — automate it in n8n.</div>
+  </div>
+
+</div>
+
+<script>
+function show(i,btn){
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
